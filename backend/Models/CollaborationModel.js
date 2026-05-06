@@ -1,11 +1,34 @@
-// post 
-// user if exist send req to join 
-// create msg attribute in user and send notification like someone is trying to join u into grp give 2 options reject or accept
-// set ststus to pending
-//if user want to join send true and change the status to accepted in owner collaboration 
-//if user ignores set status to rejected
+import { Schema, model } from "mongoose";
 
-// include messages array in every user
+const collaborationSchema = new Schema(
+  {
+    repoId: {
+      type: Schema.Types.ObjectId,
+      ref: "Repository",
+      required: true,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    invitedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected", "removed"],
+      default: "pending",
+    },
+    role: {
+      type: String,
+      enum: ["collaborator", "viewer"],
+      default: "collaborator",
+    },
+  },
+  { timestamps: true }
+);
 
-// get
-//put/patch
+export const CollaborationModel = model("Collaboration", collaborationSchema);

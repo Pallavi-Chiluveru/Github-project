@@ -13,12 +13,15 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await API.post("/auth/login", { email, password });
+      const res = await API.post("/user-api/login", { email, password });
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("user", JSON.stringify(res.data.payload));
       navigate("/dashboard");
     } catch (err) {
-      alert("Login failed. Please check your credentials.");
+      const errorMsg = err.response?.data?.error || 
+                       err.response?.data?.message || 
+                       "Login failed. Please check your credentials.";
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }

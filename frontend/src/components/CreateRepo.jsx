@@ -1,21 +1,23 @@
 import { useState } from "react";
+import { 
+  Plus, 
+  ChevronDown, 
+  Globe, 
+  Lock, 
+  Code2, 
+  Info,
+  CheckCircle2
+} from "lucide-react";
 import API from "../api";
 import { useNavigate } from "react-router-dom";
-import { 
-  Book, 
-  ChevronDown, 
-  Lock, 
-  Globe, 
-  Info, 
-  FileText, 
-  Shield, 
-  Eye
-} from "lucide-react";
 
 export default function CreateRepo() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  const [addReadme, setAddReadme] = useState(false);
+  const [gitignore, setGitignore] = useState("None");
+  const [license, setLicense] = useState("None");
   const [loading, setLoading] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const navigate = useNavigate();
@@ -26,162 +28,217 @@ export default function CreateRepo() {
     
     setLoading(true);
     try {
-      await API.post("/repo", { name, description, isPublic });
+      await API.post("/repo-api/createRepo", { 
+        name, 
+        description, 
+        isPublic, 
+        addReadme,
+        gitignore,
+        license
+      });
       navigate("/dashboard");
     } catch (err) {
-      alert(err.response?.data?.error || "Error creating repository");
-    } finally {
+      console.error("Creation failed:", err);
+      const msg = err.response?.data?.message || err.response?.data?.error || "Connection error - please check if server is running";
+      alert(msg);
+    } finally {     
       setLoading(false);
     }
   };
 
+  const gitignoreOptions = ["None", "Node", "Python", "Java", "C++", "Go", "Rust", "Unity"];
+  const licenseOptions = ["None", "MIT", "Apache 2.0", "GPLv3", "BSD 3-Clause", "Unlicense"];
+
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9] pb-20">
-      <div className="mx-auto max-w-3xl px-6 pt-10">
-        <header className="mb-8 border-b border-[#30363d] pb-6">
-          <h1 className="text-2xl font-semibold text-white">Create a new repository</h1>
-          <p className="mt-1 text-sm text-[#8b949e]">
-            Repositories contain a project's files and version history. Have a project elsewhere? 
-            <span className="ml-1 text-[#58a6ff] hover:underline cursor-pointer">Import a repository.</span>
+    <div className="min-h-screen bg-[#030712] text-slate-200 pb-20 selection:bg-indigo-500/30">
+      <div className="mx-auto max-w-4xl px-6 pt-12">
+        <header className="mb-10 text-center">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-xl shadow-indigo-500/20 mb-4">
+            <Code2 className="h-7 w-7 text-white" />
+          </div>
+          <h1 className="text-4xl font-extrabold text-white tracking-tight">Create New Project</h1>
+          <p className="mt-3 text-lg text-slate-400">
+            A repository contains all your project files, including the revision history.
           </p>
-          <p className="mt-4 text-xs text-[#8b949e]">Required fields are marked with an asterisk (*).</p>
         </header>
 
         <form onSubmit={handleCreate} className="space-y-8">
-          {/* SECTION 1: GENERAL */}
-          <section className="relative pl-8 before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:bg-[#161b22] before:text-xs before:font-bold before:text-[#8b949e] before:content-['1']">
-            <h2 className="mb-4 text-base font-semibold text-white">General</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <div className="flex flex-col gap-4 md:flex-row md:items-end">
-              <div className="flex-1">
-                <label className="mb-2 block text-sm font-semibold text-white">Owner *</label>
-                <div className="flex items-center gap-2 rounded-md border border-[#30363d] bg-[#161b22] px-3 py-1.5 text-sm">
-                   <div className="h-5 w-5 rounded-full bg-slate-700 overflow-hidden">
-                      <img src={`https://ui-avatars.com/api/?name=${user?.username || "Guest"}&background=random`} alt="User" />
+            {/* LEFT COLUMN: PRIMARY INFO */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-sm shadow-xl">
+                <div className="flex items-center gap-3 mb-6">
+                   <div className="h-8 w-8 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                      <span className="text-xs font-bold text-indigo-400">01</span>
                    </div>
-                   <span className="font-medium text-[#e6edf3]">{user?.username || "Loading..."}</span>
-                   <ChevronDown className="ml-auto h-4 w-4 text-[#8b949e]" />
+                   <h2 className="text-xl font-bold text-white">General Information</h2>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-300">Owner</label>
+                      <div className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2.5">
+                        <div className="h-6 w-6 rounded-full overflow-hidden ring-2 ring-slate-800">
+                           <img src={`https://ui-avatars.com/api/?name=${user?.username || "Guest"}&background=random`} alt="User" />
+                        </div>
+                        <span className="text-sm font-medium text-slate-200">{user?.username || "Loading..."}</span>
+                        <ChevronDown className="ml-auto h-4 w-4 text-slate-500" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-300">Repository Name *</label>
+                      <input
+                        type="text"
+                        required
+                        className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+                        placeholder="e.g. my-awesome-app"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-300 flex justify-between">
+                      Description <span className="text-xs font-normal text-slate-500">{description.length}/350</span>
+                    </label>
+                    <textarea
+                      rows="3"
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
+                      placeholder="Briefly describe your project..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="hidden pb-2 text-2xl text-[#30363d] md:block">/</div>
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-sm shadow-xl">
+                <div className="flex items-center gap-3 mb-6">
+                   <div className="h-8 w-8 rounded-full bg-purple-500/10 flex items-center justify-center">
+                      <span className="text-xs font-bold text-purple-400">02</span>
+                   </div>
+                   <h2 className="text-xl font-bold text-white">Visibility & Access</h2>
+                </div>
 
-              <div className="flex-[2]">
-                <label className="mb-2 block text-sm font-semibold text-white">Repository name *</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-1.5 text-sm text-[#e6edf3] focus:border-[#1f6feb] focus:outline-none focus:ring-1 focus:ring-[#1f6feb]"
-                  placeholder="name-your-repo"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <button 
+                    type="button"
+                    onClick={() => setIsPublic(true)}
+                    className={`flex flex-col items-start gap-3 rounded-2xl border p-5 transition-all text-left group ${isPublic ? "border-indigo-500 bg-indigo-500/5 ring-1 ring-indigo-500" : "border-slate-800 bg-slate-950/50 hover:border-slate-700"}`}
+                   >
+                      <div className={`p-2 rounded-lg ${isPublic ? "bg-indigo-500 text-white" : "bg-slate-800 text-slate-400"}`}>
+                        <Globe className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold ${isPublic ? "text-white" : "text-slate-300"}`}>Public</span>
+                          {isPublic && <CheckCircle2 className="h-4 w-4 text-indigo-400" />}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">Anyone on the internet can see this project. You choose who can commit.</p>
+                      </div>
+                   </button>
+
+                   <button 
+                    type="button"
+                    onClick={() => setIsPublic(false)}
+                    className={`flex flex-col items-start gap-3 rounded-2xl border p-5 transition-all text-left group ${!isPublic ? "border-purple-500 bg-purple-500/5 ring-1 ring-purple-500" : "border-slate-800 bg-slate-950/50 hover:border-slate-700"}`}
+                   >
+                      <div className={`p-2 rounded-lg ${!isPublic ? "bg-purple-500 text-white" : "bg-slate-800 text-slate-400"}`}>
+                        <Lock className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold ${!isPublic ? "text-white" : "text-slate-300"}`}>Private</span>
+                          {!isPublic && <CheckCircle2 className="h-4 w-4 text-purple-400" />}
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">You choose who can see and commit to this project.</p>
+                      </div>
+                   </button>
+                </div>
               </div>
             </div>
-            <p className="mt-2 text-xs text-[#8b949e]">
-              Great repository names are short and memorable. How about <span className="font-bold text-[#3fb950] italic">shiny-octo-couscous</span>?
-            </p>
 
-            <div className="mt-6">
-              <label className="mb-2 block text-sm font-semibold text-white">
-                Description <span className="font-normal text-[#8b949e]">(optional)</span>
-              </label>
-              <input
-                type="text"
-                className="w-full rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-1.5 text-sm text-[#e6edf3] focus:border-[#1f6feb] focus:outline-none focus:ring-1 focus:ring-[#1f6feb]"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              <p className="mt-1 text-[10px] text-[#8b949e]">{description.length} / 350 characters</p>
-            </div>
-          </section>
+            {/* RIGHT COLUMN: ADDITIONAL OPTIONS */}
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-sm shadow-xl h-full">
+                <div className="flex items-center gap-3 mb-6">
+                   <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                      <span className="text-xs font-bold text-emerald-400">03</span>
+                   </div>
+                   <h2 className="text-xl font-bold text-white">Initialize Project</h2>
+                </div>
 
-          {/* SECTION 2: CONFIGURATION */}
-          <section className="relative pl-8 before:absolute before:left-0 before:top-0 before:flex before:h-6 before:w-6 before:items-center before:justify-center before:rounded-full before:bg-[#161b22] before:text-xs before:font-bold before:text-[#8b949e] before:content-['2']">
-            <h2 className="mb-4 text-base font-semibold text-white">Configuration</h2>
-
-            {/* VISIBILITY */}
-            <div className="rounded-lg border border-[#30363d] bg-[#161b22] overflow-hidden">
-               <div className="p-4">
-                  <div className="flex items-center justify-between">
-                     <div>
-                        <h3 className="text-sm font-semibold text-white">Choose visibility *</h3>
-                        <p className="text-xs text-[#8b949e]">Choose who can see and commit to this repository</p>
-                     </div>
-                     <div className="flex gap-2">
-                        <button 
-                          type="button"
-                          onClick={() => setIsPublic(true)}
-                          className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition-all ${isPublic ? "border-[#1f6feb] bg-[#1f6feb]/10 text-[#58a6ff]" : "border-[#30363d] bg-[#21262d] text-[#8b949e] hover:bg-[#30363d]"}`}
-                        >
-                           <Globe className="h-4 w-4" /> Public
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={() => setIsPublic(false)}
-                          className={`flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-semibold transition-all ${!isPublic ? "border-[#1f6feb] bg-[#1f6feb]/10 text-[#58a6ff]" : "border-[#30363d] bg-[#21262d] text-[#8b949e] hover:bg-[#30363d]"}`}
-                        >
-                           <Lock className="h-4 w-4" /> Private
-                        </button>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950/50 border border-slate-800/50">
+                    <div className="flex gap-3 items-center">
+                      <div className="h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center">
+                        <Plus className="h-4 w-4 text-slate-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">Add README</p>
+                        <p className="text-[10px] text-slate-500">Longer description</p>
+                      </div>
+                    </div>
+                    <div 
+                        onClick={() => setAddReadme(!addReadme)}
+                        className={`h-6 w-11 rounded-full relative cursor-pointer transition-all ${addReadme ? "bg-emerald-500 shadow-lg shadow-emerald-500/20" : "bg-slate-800"}`}
+                      >
+                        <div className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${addReadme ? "left-6" : "left-1"}`}></div>
                      </div>
                   </div>
-               </div>
 
-               {/* HELP TEXT */}
-               <div className="bg-[#0d1117] p-3 text-[11px] text-[#8b949e] border-t border-[#30363d]">
-                  {isPublic ? (
-                    <p>Anyone on the internet can see this repository. You choose who can commit.</p>
-                  ) : (
-                    <p>You choose who can see and commit to this repository.</p>
-                  )}
-               </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-300">
+                      <span>.gitignore Template</span>
+                      <Info className="h-3 w-3 text-slate-500" />
+                    </div>
+                    <select 
+                      value={gitignore}
+                      onChange={(e) => setGitignore(e.target.value)}
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer hover:bg-slate-950 transition-colors"
+                    >
+                      {gitignoreOptions.map(opt => <option key={opt} value={opt} className="bg-slate-900">{opt === "None" ? "No .gitignore" : opt}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-slate-300">
+                      <span>Choose License</span>
+                      <Info className="h-3 w-3 text-slate-500" />
+                    </div>
+                    <select 
+                      value={license}
+                      onChange={(e) => setLicense(e.target.value)}
+                      className="w-full rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none appearance-none cursor-pointer hover:bg-slate-950 transition-colors"
+                    >
+                      {licenseOptions.map(opt => <option key={opt} value={opt} className="bg-slate-900">{opt === "None" ? "No license" : opt}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="pt-6">
+                    <button 
+                      type="submit"
+                      disabled={loading}
+                      className="w-full rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 py-4 font-bold text-white shadow-xl shadow-indigo-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100"
+                    >
+                      {loading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                          Creating...
+                        </div>
+                      ) : "Create Repository"}
+                    </button>
+                    <p className="mt-4 text-center text-[11px] text-slate-500 leading-relaxed px-4">
+                      By clicking "Create Repository", you agree to our Terms of Service and Privacy Policy.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            {/* OPTIONS */}
-            <div className="mt-6 space-y-4">
-               <div className="flex items-center justify-between rounded-lg border border-[#30363d] bg-[#161b22] p-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Add README</h3>
-                    <p className="text-xs text-[#8b949e]">READMEs can be used as longer descriptions. <span className="text-[#58a6ff] hover:underline cursor-pointer">About READMEs</span></p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                     <span className="text-xs text-[#8b949e]">Off</span>
-                     <div className="h-5 w-10 rounded-full bg-[#30363d] relative cursor-not-allowed">
-                        <div className="absolute left-1 top-1 h-3 w-3 rounded-full bg-[#8b949e]"></div>
-                     </div>
-                  </div>
-               </div>
-
-               <div className="flex items-center justify-between rounded-lg border border-[#30363d] bg-[#161b22] p-4 opacity-70">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Add .gitignore</h3>
-                    <p className="text-xs text-[#8b949e]">.gitignore tells git which files not to track. <span className="text-[#58a6ff] hover:underline cursor-pointer">About .gitignore files</span></p>
-                  </div>
-                  <button type="button" className="flex items-center gap-2 rounded-md border border-[#30363d] bg-[#21262d] px-3 py-1.5 text-xs font-semibold text-[#8b949e]">
-                     No .gitignore <ChevronDown className="h-4 w-4" />
-                  </button>
-               </div>
-
-               <div className="flex items-center justify-between rounded-lg border border-[#30363d] bg-[#161b22] p-4 opacity-70">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Add license</h3>
-                    <p className="text-xs text-[#8b949e]">Licenses explain how others can use your code. <span className="text-[#58a6ff] hover:underline cursor-pointer">About licenses</span></p>
-                  </div>
-                  <button type="button" className="flex items-center gap-2 rounded-md border border-[#30363d] bg-[#21262d] px-3 py-1.5 text-xs font-semibold text-[#8b949e]">
-                     No license <ChevronDown className="h-4 w-4" />
-                  </button>
-               </div>
-            </div>
-          </section>
-
-          <div className="mt-10 flex justify-end border-t border-[#30363d] pt-8">
-            <button
-              type="submit"
-              disabled={loading || !name}
-              className={`rounded-md bg-[#238636] px-6 py-2 text-sm font-bold text-white transition-all hover:bg-[#2ea043] focus:ring-2 focus:ring-[#238636] focus:ring-offset-2 focus:ring-offset-[#0d1117] disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {loading ? "Creating..." : "Create repository"}
-            </button>
           </div>
         </form>
       </div>

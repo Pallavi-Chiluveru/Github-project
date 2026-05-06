@@ -1,14 +1,32 @@
-import {Schema,model} from "mongoose";
+import { Schema, model } from "mongoose";
 
-const commitSchema = new Schema({
-  repository: {
-    type: String,
-    required: true
+const commitSchema = new Schema(
+  {
+    repoId: {
+      type: Schema.Types.ObjectId,
+      ref: "Repository",
+      required: true,
+    },
+
+    message: {
+      type: String,
+      default: "initial commit",
+    },
+
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+
+    snapshot: [
+      {
+        filename: String,
+        filePath: String,
+      },
+    ],
   },
-  message: {
-    type: String,
-    required: true
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-export default model("Commit", commitSchema); 7
+export const CommitModel = model("Commit", commitSchema);

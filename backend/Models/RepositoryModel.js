@@ -1,28 +1,75 @@
-import {model,Schema, Types} from 'mongoose'
+import {Schema,model} from "mongoose";
+import "../models/UserModel.js";
+const repositorySchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-const RepositorySchema=new Schema({
-    owner:{
-        type:Types.ObjectId,
-        ref:"user"
+    description: {
+      type: String,
+      default: "",
     },
-    name:{
-        type:String,
-        required:[true,"Repo name is required!"]
+
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
     },
-    description:{
-        type:String
+
+    isPrivate: {
+      type: Boolean,
+      default: false,
     },
-    isPublic:{
-        type:Boolean,
-        default:true
+
+    collaborators: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "user",
+      },
+    ],
+
+    viewers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "user",
+      },
+    ],
+
+    defaultBranch: {
+      type: String,
+      default: "main",
     },
-    createdAt:{
-        type:Date,
-        default:Date.now
+
+    gitRemoteUrl: {
+      type: String,
+      default: "",
     },
-    collabrators:[{
-        type:Types.ObjectId,
-        ref:'user'
-    }]
-})
-export const RepositoryModel=model("repo",RepositorySchema)
+
+    gitProvider: {
+      type: String,
+      enum: ["none", "github"],
+      default: "none",
+    },
+
+    // optional but useful later
+    tags: [
+      {
+        type: String,
+      },
+    ],
+    gitignore: {
+      type: String,
+      default: "None"
+    },
+    license: {
+      type: String,
+      default: "None"
+    }
+  },
+  { timestamps: true }
+);
+
+export const RepositoryModel = model("Repository", repositorySchema);

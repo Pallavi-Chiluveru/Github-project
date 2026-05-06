@@ -14,11 +14,14 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     try {
-      await API.post("/auth/register", { username, email, password });
+      await API.post("/user-api/register", { username, email, password });
       alert("Account created successfully! You can now log in.");
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.error || err.response?.data?.msg || "Registration failed. Please try again.");
+      const errorMsg = err.response?.data?.error || 
+                       err.response?.data?.message || 
+                       "Registration failed. Please try again.";
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
